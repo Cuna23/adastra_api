@@ -31,27 +31,5 @@ class UserSeeder extends Seeder
                 'status' => 'active',
             ]
         );
-
-        User::updateOrCreate(
-            ['email' => 'tm@adastra.com.my'],
-            [
-                'name' => 'TM Executive',
-                'password' => Hash::make('password123'),
-                'role' => 'trademark_executive',
-                'department_id' => 4,
-                'status' => 'active',
-            ]
-        );
-
-        User::updateOrCreate(
-            ['email' => 'patent@adastra.com.my'],
-            [
-                'name' => 'Patent Executive',
-                'password' => Hash::make('password123'),
-                'role' => 'patent_executive',
-                'department_id' => 5,
-                'status' => 'inactive',
-            ]
-        );
     }
 }
