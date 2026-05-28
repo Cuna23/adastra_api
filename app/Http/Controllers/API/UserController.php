@@ -20,6 +20,35 @@ class UserController extends Controller
     // CREATE USER
     public function store(Request $request)
     {
+        // Only super_admin & admin can create users
+        if (!in_array(auth()->user()->role, ['super_admin', 'admin'])) {
+            return response()->json([
+                'message' => 'Unauthorized'
+            ], 403);
+        }
+
+        // Only super_admin can create another super_admin
+        if (
+            $request->role === 'super_admin' &&
+            auth()->user()->role !== 'super_admin'
+        ) {
+            return response()->json([
+                'message' => 'Only Super Admin can create Super Admin accounts'
+            ], 403);
+        }
+
+        // Maximum 2 super_admin accounts
+        if ($request->role === 'super_admin') {
+
+            $count = User::where('role', 'super_admin')->count();
+
+            if ($count >= 2) {
+                return response()->json([
+                    'message' => 'Only 2 super admin accounts allowed'
+                ], 400);
+            }
+        }
+
         $validated = $request->validate([
             'name' => 'required',
             'email' => 'required|email|unique:users',
@@ -49,7 +78,12 @@ class UserController extends Controller
 
     // UPDATE USER
     public function update(Request $request, string $id)
-    {
+    {   
+        if (!in_array(auth()->user()->role, ['super_admin', 'admin'])) {
+            return response()->json([
+                'message' => 'Unauthorized'
+            ], 403);
+        }
         $user = User::findOrFail($id);
 
         $validated = $request->validate([
@@ -70,7 +104,12 @@ class UserController extends Controller
 
     // DELETE USER
     public function destroy(string $id)
-    {
+    {   
+        if (auth()->user()->role !== 'super_admin') {
+            return response()->json([
+                'message' => 'Unauthorized'
+            ], 403);
+        }
         $user = User::findOrFail($id);
 
         $user->delete();
