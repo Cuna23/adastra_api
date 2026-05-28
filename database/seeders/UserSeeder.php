@@ -1,6 +1,6 @@
 <?php
 
-namespace Database\Seeders;//testtt
+namespace Database\Seeders;
 
 use App\Models\User;
 use Illuminate\Database\Seeder;
