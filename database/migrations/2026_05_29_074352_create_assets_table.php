@@ -10,11 +10,9 @@ return new class extends Migration {
         Schema::create('assets', function (Blueprint $table) {
             $table->id();
 
-            $table->string('asset_tag')->unique();
-            $table->string('serial_number')->nullable();
+            $table->string('brand')->nullable();
             $table->string('model')->nullable();
 
-            // relation
             $table->foreignId('category_id')
                 ->constrained('asset_categories')
                 ->cascadeOnDelete();
@@ -26,13 +24,21 @@ return new class extends Migration {
                 'dispose'
             ])->default('pending');
 
+            $table->string('asset_tag')->unique();
+
+            $table->string('serial_number')->nullable();
+
+            $table->string('emp_id')->nullable();
+
+            $table->string('department')->nullable();
+
+            $table->string('approved_by')->nullable();
+
+            $table->string('purchased_by')->nullable();
+
             $table->string('assigned_to')->nullable();
 
-            // checkin / checkout
-            $table->enum('asset_flow', [
-                'checkin',
-                'checkout'
-            ])->nullable();
+            $table->text('remark')->nullable();
 
             $table->timestamps();
         });

@@ -2,6 +2,8 @@
 
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\API\UserController;
+use App\Http\Controllers\Api\AssetCategoryController;
+use App\Http\Controllers\Api\AssetController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -14,4 +16,6 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/me', [AuthController::class, 'me']);
 
     Route::apiResource('users', UserController::class);
+    Route::apiResource('asset-categories', AssetCategoryController::class);
+    Route::apiResource('assets', AssetController::class);
 });
