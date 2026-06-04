@@ -23,6 +23,6 @@ class Asset extends Model
 
     public function category()
     {
-        return $this->belongsTo(AssetCategory::class);
+        return $this->belongsTo(AssetCategory::class, 'category_id');
     }
 }

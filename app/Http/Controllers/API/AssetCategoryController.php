@@ -56,10 +56,16 @@ class AssetCategoryController extends Controller
     {
         $category = AssetCategory::findOrFail($id);
 
+        if ($category->assets()->exists()) {
+            return response()->json([
+                'message' => 'Category is being used'
+            ], 422);
+        }
+
         $category->delete();
 
         return response()->json([
-            'message' => 'Category deleted',
+            'message' => 'Category deleted'
         ]);
     }
 }
