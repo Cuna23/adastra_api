@@ -78,7 +78,7 @@ class AssetController extends Controller
         if (!empty($validated['serial_number'])) {
             $validated['serial_number'] =
                 strtoupper(trim($validated['serial_number']));
-        }
+        }+
 
         $asset = Asset::create($validated);
 
