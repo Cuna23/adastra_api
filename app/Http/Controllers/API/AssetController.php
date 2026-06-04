@@ -15,6 +15,13 @@ class AssetController extends Controller
     {
         $query = Asset::with('category');
 
+        if ($request->filled('category_id')) {
+        $query->where(
+            'category_id',
+            $request->category_id
+        );
+    }
+
         if ($request->filled('search')) {
             $search = $request->search;
 
@@ -46,7 +53,7 @@ class AssetController extends Controller
 
             'category_id' => 'required|exists:asset_categories,id',
 
-            'status' => 'required|in:Available,Assigned,Maintenance,Disposed',
+           'status' => 'required|in:Pending,Available,Maintenance,Disposed',
 
             'asset_tag' => 'required|string|max:255|unique:assets,asset_tag',
 
@@ -106,7 +113,7 @@ class AssetController extends Controller
 
             'category_id' => 'required|exists:asset_categories,id',
 
-            'status' => 'required|in:Available,Assigned,Maintenance,Disposed',
+            'status' => 'required|in:Pending,Available,Maintenance,Disposed',
 
             'asset_tag' =>
                 'required|string|max:255|unique:assets,asset_tag,' . $id,

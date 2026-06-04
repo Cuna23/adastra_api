@@ -10,15 +10,12 @@ class AssetCategorySeeder extends Seeder
     public function run(): void
     {
         $categories = [
-            'Laptop',
-            'Desktop',
-            'Monitor',
-            'Printer',
+            'Software',
+            'Computer',
             'Network Device',
-            'Server',
-            'Software License',
-            'Mobile Device',
-            'Accessory',
+            'Phone',
+            'Printer',
+            'Monitor',
         ];
 
         foreach ($categories as $category) {
