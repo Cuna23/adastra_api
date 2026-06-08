@@ -9,12 +9,18 @@ class DepartmentSeeder extends Seeder
 {
     public function run(): void
     {
-        Department::insert([
-            ['department_name' => 'Human Resource'],
-            ['department_name' => 'Information Technology'],
-            ['department_name' => 'Finance'],
-            ['department_name' => 'Trademark'],
-            ['department_name' => 'Patent'],
-        ]);
+        $departments = [
+            'Human Resource',
+            'Information Technology',
+            'Finance',
+            'Trademark',
+            'Patent',
+        ];
+
+        foreach ($departments as $name) {
+            Department::UpdateOrCreate(
+                ['department_name' => $name]  // cari by name, kalau takde baru create
+            );
+        }
     }
 }

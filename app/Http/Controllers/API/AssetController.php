@@ -5,9 +5,37 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Models\Asset;
 use Illuminate\Http\Request;
+use Illuminate\Support\Str;
 
 class AssetController extends Controller
 {
+    /**
+     * Standardize incoming asset fields
+     */
+    private function standardize(array $data): array
+    {
+        // UPPERCASE — identifiers
+        foreach (['asset_tag', 'serial_number', 'emp_id'] as $field) {
+            if (!empty($data[$field])) {
+                $data[$field] = strtoupper(trim($data[$field]));
+            }
+        }
+
+        // Title Case — names & departments
+        foreach (['assigned_to', 'approved_by', 'purchased_by', 'department'] as $field) {
+            if (!empty($data[$field])) {
+                $data[$field] = Str::title(trim($data[$field]));
+            }
+        }
+
+        // Sentence case — free text
+        if (!empty($data['remark'])) {
+            $data['remark'] = ucfirst(strtolower(trim($data['remark'])));
+        }
+
+        return $data;
+    }
+
     /**
      * Display assets list
      */
@@ -16,15 +44,11 @@ class AssetController extends Controller
         $query = Asset::with('category');
 
         if ($request->filled('category_id')) {
-        $query->where(
-            'category_id',
-            $request->category_id
-        );
-    }
+            $query->where('category_id', $request->category_id);
+        }
 
         if ($request->filled('search')) {
             $search = $request->search;
-
             $query->where(function ($q) use ($search) {
                 $q->where('asset_tag', 'like', "%{$search}%")
                     ->orWhere('serial_number', 'like', "%{$search}%")
@@ -36,9 +60,7 @@ class AssetController extends Controller
         }
 
         return response()->json(
-            $query->latest()->paginate(
-                $request->get('per_page', 10)
-            )
+            $query->latest()->paginate($request->get('per_page', 30))
         );
     }
 
@@ -48,44 +70,27 @@ class AssetController extends Controller
     public function store(Request $request)
     {
         $validated = $request->validate([
-            'brand' => 'nullable|string|max:255',
-            'model' => 'nullable|string|max:255',
-
-            'category_id' => 'required|exists:asset_categories,id',
-
-           'status' => 'required|in:Pending,Available,Maintenance,Disposed',
-
-            'asset_tag' => 'required|string|max:255|unique:assets,asset_tag',
-
+            'brand'         => 'nullable|string|max:255',
+            'model'         => 'nullable|string|max:255',
+            'category_id'   => 'required|exists:asset_categories,id',
+            'status'        => 'required|in:Pending,Available,Maintenance,Disposed',
+            'asset_tag'     => 'required|string|max:255|unique:assets,asset_tag',
             'serial_number' => 'nullable|string|max:255',
-
-            'emp_id' => 'nullable|string|max:255',
-            'department' => 'nullable|string|max:255',
-
-            'approved_by' => 'nullable|string|max:255',
-            'purchased_by' => 'nullable|string|max:255',
-            'assigned_to' => 'nullable|string|max:255',
-
-            'remark' => 'nullable|string',
+            'emp_id'        => 'nullable|string|max:255',
+            'department'    => 'nullable|string|max:255',
+            'approved_by'   => 'nullable|string|max:255',
+            'purchased_by'  => 'nullable|string|max:255',
+            'assigned_to'   => 'nullable|string|max:255',
+            'remark'        => 'nullable|string',
         ]);
 
-        /*
-         * Standardize values
-         */
-        $validated['asset_tag'] =
-            strtoupper(trim($validated['asset_tag']));
-
-        if (!empty($validated['serial_number'])) {
-            $validated['serial_number'] =
-                strtoupper(trim($validated['serial_number']));
-        }+
+        $validated = $this->standardize($validated);
 
         $asset = Asset::create($validated);
 
         return response()->json([
             'message' => 'Asset created successfully',
-            'data' => Asset::with('category')
-                ->find($asset->id),
+            'data'    => Asset::with('category')->find($asset->id),
         ], 201);
     }
 
@@ -94,10 +99,9 @@ class AssetController extends Controller
      */
     public function show($id)
     {
-        $asset = Asset::with('category')
-            ->findOrFail($id);
-
-        return response()->json($asset);
+        return response()->json(
+            Asset::with('category')->findOrFail($id)
+        );
     }
 
     /**
@@ -108,45 +112,27 @@ class AssetController extends Controller
         $asset = Asset::findOrFail($id);
 
         $validated = $request->validate([
-            'brand' => 'nullable|string|max:255',
-            'model' => 'nullable|string|max:255',
-
-            'category_id' => 'required|exists:asset_categories,id',
-
-            'status' => 'required|in:Pending,Available,Maintenance,Disposed',
-
-            'asset_tag' =>
-                'required|string|max:255|unique:assets,asset_tag,' . $id,
-
+            'brand'         => 'nullable|string|max:255',
+            'model'         => 'nullable|string|max:255',
+            'category_id'   => 'required|exists:asset_categories,id',
+            'status'        => 'required|in:Pending,Available,Maintenance,Disposed',
+            'asset_tag'     => 'required|string|max:255|unique:assets,asset_tag,' . $id,
             'serial_number' => 'nullable|string|max:255',
-
-            'emp_id' => 'nullable|string|max:255',
-            'department' => 'nullable|string|max:255',
-
-            'approved_by' => 'nullable|string|max:255',
-            'purchased_by' => 'nullable|string|max:255',
-            'assigned_to' => 'nullable|string|max:255',
-
-            'remark' => 'nullable|string',
+            'emp_id'        => 'nullable|string|max:255',
+            'department'    => 'nullable|string|max:255',
+            'approved_by'   => 'nullable|string|max:255',
+            'purchased_by'  => 'nullable|string|max:255',
+            'assigned_to'   => 'nullable|string|max:255',
+            'remark'        => 'nullable|string',
         ]);
 
-        /*
-         * Standardize values
-         */
-        $validated['asset_tag'] =
-            strtoupper(trim($validated['asset_tag']));
-
-        if (!empty($validated['serial_number'])) {
-            $validated['serial_number'] =
-                strtoupper(trim($validated['serial_number']));
-        }
+        $validated = $this->standardize($validated);
 
         $asset->update($validated);
 
         return response()->json([
             'message' => 'Asset updated',
-            'data' => Asset::with('category')
-                ->find($asset->id),
+            'data'    => Asset::with('category')->find($asset->id),
         ]);
     }
 
@@ -155,12 +141,8 @@ class AssetController extends Controller
      */
     public function destroy($id)
     {
-        $asset = Asset::findOrFail($id);
+        Asset::findOrFail($id)->delete();
 
-        $asset->delete();
-
-        return response()->json([
-            'message' => 'Asset deleted',
-        ]);
+        return response()->json(['message' => 'Asset deleted']);
     }
 }

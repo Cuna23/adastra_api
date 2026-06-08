@@ -18,14 +18,15 @@ class AssetCategoryController extends Controller
     public function store(Request $request)
     {
         $validated = $request->validate([
-            'name' => 'required|string|unique:asset_categories,name',
+            'name' => 'required|string|max:255|unique:asset_categories,name',
         ]);
 
         $category = AssetCategory::create($validated);
 
         return response()->json([
-            'message' => 'Category created successfully',
-            'data' => $category,
+            'message' => 'Category created',
+            'id'      => $category->id,
+            'name'    => $category->name,
         ], 201);
     }
 
