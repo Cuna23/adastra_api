@@ -18,11 +18,11 @@ class AssetController extends Controller
         foreach (['asset_tag', 'serial_number', 'emp_id'] as $field) {
             if (!empty($data[$field])) {
                 $data[$field] = strtoupper(trim($data[$field]));
-            }
+            } 
         }
 
         // Title Case — names & departments
-        foreach (['assigned_to', 'approved_by', 'purchased_by', 'department'] as $field) {
+        foreach (['brand', 'model', 'assigned_to', 'approved_by', 'purchased_by', 'department'] as $field) {
             if (!empty($data[$field])) {
                 $data[$field] = Str::title(trim($data[$field]));
             }
