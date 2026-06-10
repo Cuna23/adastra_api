@@ -2,9 +2,10 @@
 
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\API\UserController;
-use App\Http\Controllers\Api\AssetCategoryController;
-use App\Http\Controllers\Api\AssetController;
-use App\Http\Controllers\Api\DepartmentController;
+use App\Http\Controllers\API\AssetCategoryController;
+use App\Http\Controllers\API\AssetController;
+use App\Http\Controllers\API\DepartmentController;
+use App\Http\Controllers\API\IncidentController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -20,4 +21,5 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::apiResource('asset-categories', AssetCategoryController::class);
     Route::apiResource('assets', AssetController::class);
     Route::apiResource('departments', DepartmentController::class)->only(['index']);
+    Route::apiResource('incidents', IncidentController::class);
 });
