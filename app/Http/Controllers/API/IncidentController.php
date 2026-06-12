@@ -13,20 +13,25 @@ class IncidentController extends Controller
     /**
      * Get all incidents
      */
-    public function index()
-    {
-        $incidents = Incident::with([
-            'user',
-            'assignedUser'
-        ])
-        ->latest()
-        ->get();
+public function index()
+{
+    $user = Auth::user();
 
-        return response()->json([
-            'success' => true,
-            'data' => $incidents
-        ]);
+    $query = Incident::with([
+        'user',
+        'assignedUser'
+    ]);
+
+    if ($user->role === 'staff') {
+        $query->where('user_id', $user->id);
     }
+    // admin + super_admin → see all
+    $incidents = $query->latest()->get();
+    return response()->json([
+        'success' => true,
+        'data' => $incidents
+    ]);
+}
 
     /**
      * Create new incident
