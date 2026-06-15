@@ -14,6 +14,7 @@ class Incident extends Model
         'category',
         'priority',
         'attachment',
+        'attachment_name',
         'status',
         'assigned_to',
         'resolution',

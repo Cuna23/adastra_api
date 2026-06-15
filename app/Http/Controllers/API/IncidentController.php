@@ -10,86 +10,80 @@ use Illuminate\Support\Facades\Auth;
 
 class IncidentController extends Controller
 {
-    /**
-     * Get all incidents
-     */
-public function index()
-{
-    $user = Auth::user();
+    public function index()
+    {
+        $user = Auth::user();
 
-    $query = Incident::with([
-        'user',
-        'assignedUser'
-    ]);
+        $query = Incident::with(['user', 'assignedUser']);
 
-    if ($user->role === 'staff') {
-        $query->where('user_id', $user->id);
+        if ($user->role === 'staff') {
+            $query->where('user_id', $user->id);
+        }
+
+        $incidents = $query->latest()->get();
+
+        return response()->json([
+            'success' => true,
+            'data'    => $incidents
+        ]);
     }
-    // admin + super_admin → see all
-    $incidents = $query->latest()->get();
-    return response()->json([
-        'success' => true,
-        'data' => $incidents
-    ]);
-}
 
-    /**
-     * Create new incident
-     */
     public function store(Request $request)
     {
         $request->validate([
-            'subject' => 'required|string|max:255',
+            'subject'     => 'required|string|max:255',
             'description' => 'required|string',
-            'category' => 'required',
-            'priority' => 'required',
-            'attachment' => 'nullable|file|mimes:jpg,jpeg,png,pdf|max:5120'
+            'category'    => 'required',
+            'priority'    => 'required',
+            'attachment'  => 'nullable|file|mimes:jpg,jpeg,png,pdf|max:5120'
         ]);
 
         $attachmentPath = null;
+        $attachmentName = null;
 
         if ($request->hasFile('attachment')) {
-            $attachmentPath = $request
-                ->file('attachment')
-                ->store('incident_attachments', 'public');
+            $file           = $request->file('attachment');
+            $attachmentName = $file->getClientOriginalName();
+            $safeName       = time() . '_' . $attachmentName;
+
+            $attachmentPath = $file->storeAs(
+                'incident_attachments',
+                $safeName,
+                'public'
+            );
         }
 
         $incident = Incident::create([
-            'ticket_no' => '',
-            'user_id' => Auth::id(),
-            'subject' => $request->subject,
+            'ticket_no'   => '',
+            'user_id'     => Auth::id(),
+            'subject'     => $request->subject,
             'description' => $request->description,
-            'category' => $request->category,
-            'priority' => $request->priority,
-            'attachment' => $attachmentPath,
-            'status' => 'Open'
+            'category'    => $request->category,
+            'priority'    => $request->priority,
+            'attachment'  => $attachmentPath,
+            'attachment_name' => $attachmentName,
+            'status'      => 'Open'
         ]);
 
-        // Generate Ticket Number
         $incident->update([
-            'ticket_no' => 'INC-' .
-                date('Y') . '-' .
+            'ticket_no' => 'INC-' . date('Y') . '-' .
                 str_pad($incident->id, 5, '0', STR_PAD_LEFT)
         ]);
 
-        // Create Log
         IncidentLog::create([
             'incident_id' => $incident->id,
-            'user_id' => Auth::id(),
-            'action' => 'Created',
+            'user_id'     => Auth::id(),
+            'action'      => 'Created',
             'description' => 'Ticket submitted'
         ]);
 
         return response()->json([
             'success' => true,
             'message' => 'Incident created successfully',
-            'data' => $incident
+            'data'    => $incident
         ], 201);
     }
 
-    /**
-     * Show single incident
-     */
     public function show($id)
     {
         $incident = Incident::with([
@@ -107,13 +101,10 @@ public function index()
 
         return response()->json([
             'success' => true,
-            'data' => $incident
+            'data'    => $incident
         ]);
     }
 
-    /**
-     * Update incident
-     */
     public function update(Request $request, $id)
     {
         $incident = Incident::find($id);
@@ -125,33 +116,57 @@ public function index()
             ], 404);
         }
 
+        // ── Staff adding a note — NEVER touches incident fields ───────────
+        if ($request->has('note')) {
+            $note = trim($request->input('note'));
+
+            if (empty($note)) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Note cannot be empty'
+                ], 422);
+            }
+
+            IncidentLog::create([
+                'incident_id' => $incident->id,
+                'user_id'     => Auth::id(),
+                'action'      => 'Note',
+                'description' => $note
+            ]);
+
+            // Return fresh incident with logs
+            return response()->json([
+                'success' => true,
+                'message' => 'Note added',
+                'data'    => $incident->fresh(['user', 'assignedUser', 'logs.user'])
+            ]);
+        }
+
+        // ── Admin/super_admin updating incident fields ────────────────────
         $incident->update($request->only([
             'subject',
-            'description',
             'category',
             'priority',
             'status',
             'assigned_to',
             'resolution'
+            // 'description' intentionally excluded — cannot be edited after submit
         ]));
 
         IncidentLog::create([
             'incident_id' => $incident->id,
-            'user_id' => Auth::id(),
-            'action' => 'Updated',
+            'user_id'     => Auth::id(),
+            'action'      => 'Updated',
             'description' => 'Incident updated'
         ]);
 
         return response()->json([
             'success' => true,
             'message' => 'Incident updated successfully',
-            'data' => $incident
+            'data'    => $incident->fresh(['user', 'assignedUser', 'logs.user'])
         ]);
     }
 
-    /**
-     * Delete incident
-     */
     public function destroy($id)
     {
         $incident = Incident::find($id);
@@ -170,4 +185,4 @@ public function index()
             'message' => 'Incident deleted successfully'
         ]);
     }
-}
+}   
