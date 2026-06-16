@@ -62,7 +62,8 @@ class IncidentController extends Controller
             'priority'    => $request->priority,
             'attachment'  => $attachmentPath,
             'attachment_name' => $attachmentName,
-            'status'      => 'Open'
+            'status'      => 'Open',
+            'assigned_to'     => \App\Models\User::where('role', 'super_admin')->value('id')
         ]);
 
         $incident->update([
