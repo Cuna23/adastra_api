@@ -32,7 +32,7 @@ class IncidentSeeder extends Seeder
                 'description' => 'My laptop screen has been flickering intermittently for the past two days. It happens more frequently when running multiple applications.',
                 'category'    => 'Hardware',
                 'priority'    => 'Medium',
-                'status'      => 'In Progress',
+                'status'      => 'In Pending',
             ],
             [
                 'subject'     => 'Microsoft Teams crashes on startup',
@@ -53,7 +53,7 @@ class IncidentSeeder extends Seeder
                 'description' => 'Need to install AutoCAD 2024 for a project but getting an "Insufficient permissions" error. Requires IT admin approval to proceed.',
                 'category'    => 'Software',
                 'priority'    => 'High',
-                'status'      => 'In Progress',
+                'status'      => 'Review',
             ],
         ];
 
@@ -61,43 +61,58 @@ class IncidentSeeder extends Seeder
             'Open' => [
                 ['action' => 'Created', 'description' => 'Ticket submitted'],
             ],
-            'In Progress' => [
+            'In Pending' => [
                 ['action' => 'Created', 'description' => 'Ticket submitted'],
                 ['action' => 'Updated', 'description' => 'Ticket assigned to IT support'],
-                ['action' => 'Updated', 'description' => 'Status changed to In Progress — currently investigating'],
+                ['action' => 'Updated', 'description' => 'Status changed to In Pending — awaiting user response'],
+            ],
+            'Review' => [
+                ['action' => 'Created', 'description' => 'Ticket submitted'],
+                ['action' => 'Updated', 'description' => 'Ticket assigned to IT support'],
+                ['action' => 'Updated', 'description' => 'Status changed to Review — awaiting approval'],
             ],
             'Resolved' => [
                 ['action' => 'Created',  'description' => 'Ticket submitted'],
                 ['action' => 'Updated',  'description' => 'Ticket assigned to IT support'],
-                ['action' => 'Updated',  'description' => 'Status changed to In Progress — issue identified'],
+                ['action' => 'Updated',  'description' => 'Status changed to In Pending — issue identified'],
                 ['action' => 'Resolved', 'description' => 'Status changed to Resolved — issue confirmed fixed'],
             ],
         ];
 
         foreach ($incidents as $data) {
-            $reporter   = $users->random();
-            $assignedTo = $itStaff->isNotEmpty() ? $itStaff->random() : null;
-            $createdAt  = now()->subDays(rand(1, 14))->subHours(rand(0, 23));
+            // ── Stable match key: subject ONLY ──────────────────────────
+            // Reporter/assignee/timestamps are deterministic per subject too,
+            // so re-running the seeder updates the same row instead of duplicating.
+            $reporter   = $users[$users->search(fn ($u) => true) % $users->count()] ?? $users->first();
+            $reporter   = $users->get(crc32($data['subject']) % $users->count());
+            $assignedTo = $itStaff->isNotEmpty()
+                ? $itStaff->get(crc32($data['subject'] . 'assign') % $itStaff->count())
+                : null;
+            $createdAt  = now()->subDays((crc32($data['subject']) % 14) + 1);
 
-            $incident = Incident::create([
-                'ticket_no'   => '',
-                'user_id'     => $reporter->id,
-                'assigned_to' => $data['status'] !== 'Open'
-                    ? ($assignedTo?->id)
-                    : null,
-                'subject'     => $data['subject'],
-                'description' => $data['description'],
-                'category'    => $data['category'],
-                'priority'    => $data['priority'],
-                'status'      => $data['status'],
-                'attachment'  => null,
-                'created_at'  => $createdAt,
-                'updated_at'  => $createdAt,
-            ]);
+            $incident = Incident::updateOrCreate(
+                ['subject' => $data['subject']],   // match key
+                [
+                    'ticket_no'   => 'TEMP-' . crc32($data['subject']), 
+                    'user_id'     => $reporter->id,
+                    'assigned_to' => $data['status'] !== 'Open' ? ($assignedTo?->id) : null,
+                    'description' => $data['description'],
+                    'category'    => $data['category'],
+                    'priority'    => $data['priority'],
+                    'status'      => $data['status'],
+                    'attachment'  => null,
+                    'created_at'  => $createdAt,
+                    'updated_at'  => $createdAt,
+                ]
+            );
 
-            $incident->update([
-                'ticket_no' => 'INC-' . date('Y') . '-' . str_pad($incident->id, 5, '0', STR_PAD_LEFT),
-            ]);
+            if (str_starts_with($incident->ticket_no, 'TEMP-')) {
+                $incident->update([
+                    'ticket_no' => 'INC-' . date('Y') . '-' . str_pad($incident->id, 5, '0', STR_PAD_LEFT),
+                ]);
+            }
+            // Clear old logs for this incident before re-inserting, to avoid duplicate logs too
+            IncidentLog::where('incident_id', $incident->id)->delete();
 
             $logTime = $createdAt;
 
@@ -117,6 +132,6 @@ class IncidentSeeder extends Seeder
             }
         }
 
-        $this->command->info('Incident seeder completed — 5 incidents created.');
+        $this->command->info('Incident seeder completed — 5 incidents created/updated.');
     }
 }

@@ -62,7 +62,7 @@ class IncidentController extends Controller
             'priority'    => $request->priority,
             'attachment'  => $attachmentPath,
             'attachment_name' => $attachmentName,
-            'status'      => 'Open',
+            'status'      => 'In Pending', // default to In Pending for staff review
             'assigned_to'     => \App\Models\User::where('role', 'super_admin')->value('id')
         ]);
 
@@ -167,6 +167,50 @@ class IncidentController extends Controller
             'data'    => $incident->fresh(['user', 'assignedUser', 'logs.user'])
         ]);
     }
+    
+        public function updateLog(Request $request, $incidentId, $logId)
+    {
+        $log = IncidentLog::where('id', $logId)
+            ->where('incident_id', $incidentId)
+            ->where('user_id', Auth::id())  // only own notes
+            ->where('action', 'Note')
+            ->first();
+
+        if (!$log) {
+            return response()->json(['success' => false, 'message' => 'Log not found'], 404);
+        }
+
+        $note = trim($request->input('note', ''));
+        if (empty($note)) {
+            return response()->json(['success' => false, 'message' => 'Note cannot be empty'], 422);
+        }
+
+        $log->update(['description' => $note]);
+
+        $incident = Incident::with(['user', 'assignedUser', 'logs.user'])->find($incidentId);
+
+        return response()->json(['success' => true, 'message' => 'Note updated', 'data' => $incident]);
+    }
+
+    // ── Delete a note log ─────────────────────────────────────────────────────
+    public function destroyLog($incidentId, $logId)
+    {
+        $log = IncidentLog::where('id', $logId)
+            ->where('incident_id', $incidentId)
+            ->where('user_id', Auth::id())  // only own notes
+            ->where('action', 'Note')
+            ->first();
+
+        if (!$log) {
+            return response()->json(['success' => false, 'message' => 'Log not found'], 404);
+        }
+
+        $log->delete();
+
+        $incident = Incident::with(['user', 'assignedUser', 'logs.user'])->find($incidentId);
+
+        return response()->json(['success' => true, 'message' => 'Note deleted', 'data' => $incident]);
+    } 
 
     public function destroy($id)
     {
@@ -184,6 +228,34 @@ class IncidentController extends Controller
         return response()->json([
             'success' => true,
             'message' => 'Incident deleted successfully'
+        ]);
+    }
+
+    //graph
+    public function weeklyStats()
+    {
+        $startOfWeek = now()->startOfWeek(); // Monday by default in Laravel
+        $endOfWeek   = now()->endOfWeek();   // Sunday
+
+        $rows = Incident::whereBetween('created_at', [$startOfWeek, $endOfWeek])
+            ->get()
+            ->groupBy(fn ($inc) => $inc->created_at->format('Y-m-d'));
+
+        $data = [];
+        for ($i = 0; $i < 7; $i++) {
+            $date = $startOfWeek->copy()->addDays($i);
+            $key  = $date->format('Y-m-d');
+
+            $data[] = [
+                'day'   => $date->format('D'),
+                'date'  => $key,
+                'count' => $rows->get($key)?->count() ?? 0,
+            ];
+        }
+
+        return response()->json([
+            'success' => true,
+            'data'    => $data,
         ]);
     }
 }   
