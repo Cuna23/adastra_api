@@ -13,6 +13,10 @@ class IncidentController extends Controller
     public function index()
     {
         $user = Auth::user();
+        \Log::info('Incident index check', [
+        'auth_id'   => $user->id,
+        'auth_role' => $user->role,
+        ]);
 
         $query = Incident::with(['user', 'assignedUser']);
 
@@ -21,6 +25,7 @@ class IncidentController extends Controller
         }
 
         $incidents = $query->latest()->get();
+        \Log::info('Incidents found', ['count' => $incidents->count()]);
 
         return response()->json([
             'success' => true,
@@ -232,30 +237,30 @@ class IncidentController extends Controller
     }
 
     //graph
-    public function weeklyStats()
+    public function weeklyStats(Request $request)
     {
-        $startOfWeek = now()->startOfWeek(); // Monday by default in Laravel
-        $endOfWeek   = now()->endOfWeek();   // Sunday
+        $days = (int) $request->query('days', 7);
+        $days = in_array($days, [7, 14, 30, 60]) ? $days : 7;
 
-        $rows = Incident::whereBetween('created_at', [$startOfWeek, $endOfWeek])
+        $start = now()->subDays($days - 1)->startOfDay();
+        $end   = now()->endOfDay();
+
+        $rows = Incident::whereBetween('created_at', [$start, $end])
             ->get()
             ->groupBy(fn ($inc) => $inc->created_at->format('Y-m-d'));
 
         $data = [];
-        for ($i = 0; $i < 7; $i++) {
-            $date = $startOfWeek->copy()->addDays($i);
+        for ($i = 0; $i < $days; $i++) {
+            $date = $start->copy()->addDays($i);
             $key  = $date->format('Y-m-d');
 
             $data[] = [
-                'day'   => $date->format('D'),
+                'day'   => $days <= 7 ? $date->format('D') : $date->format('j/n'), // "Mon" vs "17/6"
                 'date'  => $key,
                 'count' => $rows->get($key)?->count() ?? 0,
             ];
         }
 
-        return response()->json([
-            'success' => true,
-            'data'    => $data,
-        ]);
+        return response()->json(['success' => true, 'data' => $data]);
     }
 }   
