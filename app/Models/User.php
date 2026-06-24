@@ -18,6 +18,7 @@ class User extends Authenticatable
         'password',
         'role',
         'department_id',
+        'emp_id',
         'status',
     ];
 
@@ -26,16 +27,22 @@ class User extends Authenticatable
         'remember_token',
     ];
 
+    protected $appends = ['department_name']; 
+
   protected function casts(): array
     {
         return [
             'password' => 'hashed',
-            // ← buang email_verified_at sebab dah delete column tu
         ];
     }
 
     public function department(): BelongsTo
     {
         return $this->belongsTo(Department::class);
+    }
+
+        public function getDepartmentNameAttribute()  
+    {
+        return $this->department?->department_name;
     }
 }

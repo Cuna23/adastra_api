@@ -17,6 +17,7 @@ class UserSeeder extends Seeder
                 'password' => Hash::make('password123'),
                 'role' => 'super_admin',
                 'department_id' => 2,
+                'emp_id' => 'EMP-SA01',  
                 'status' => 'active',
             ]
         );
@@ -28,6 +29,19 @@ class UserSeeder extends Seeder
                 'password' => Hash::make('password123'),
                 'role' => 'admin',
                 'department_id' => 2,
+                'emp_id' => 'EMP-AD01',  
+                'status' => 'active',
+            ]
+        );
+
+        User::updateOrCreate(
+            ['email' => 'Ainin@adastra.com.my'],
+            [
+                'name' => 'Ainin',
+                'password' => Hash::make('password123'),
+                'role' => 'staff',
+                'department_id' => 2,
+                'emp_id' => 'EMP-0101',    
                 'status' => 'active',
             ]
         );

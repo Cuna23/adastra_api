@@ -55,6 +55,7 @@ class UserController extends Controller
             'password' => 'required|min:6',
             'role' => 'required',
             'department_id' => 'nullable|exists:departments,id',
+            'emp_id' => 'nullable|string|max:255|unique:users,emp_id',
             'status' => 'required',
         ]);
 
@@ -91,6 +92,7 @@ class UserController extends Controller
             'email' => 'required|email|unique:users,email,' . $id,
             'role' => 'required',
             'department_id' => 'nullable|exists:departments,id',
+            'emp_id' => 'nullable|string|max:255|unique:users,emp_id,' . $id,
             'status' => 'required',
         ]);
 

@@ -18,7 +18,7 @@ class IncidentController extends Controller
         'auth_role' => $user->role,
         ]);
 
-        $query = Incident::with(['user', 'assignedUser']);
+        $query = Incident::with(['user.department', 'assignedUser']);
 
         if ($user->role === 'staff') {
             $query->where('user_id', $user->id);
@@ -39,6 +39,7 @@ class IncidentController extends Controller
             'subject'     => 'required|string|max:255',
             'description' => 'required|string',
             'category'    => 'required',
+            'subcategory' => 'nullable|string|max:255',
             'priority'    => 'required',
             'attachment'  => 'nullable|file|mimes:jpg,jpeg,png,pdf|max:5120'
         ]);
@@ -64,6 +65,7 @@ class IncidentController extends Controller
             'subject'     => $request->subject,
             'description' => $request->description,
             'category'    => $request->category,
+            'subcategory' => $request->subcategory,
             'priority'    => $request->priority,
             'attachment'  => $attachmentPath,
             'attachment_name' => $attachmentName,
@@ -93,7 +95,7 @@ class IncidentController extends Controller
     public function show($id)
     {
         $incident = Incident::with([
-            'user',
+            'user.department',
             'assignedUser',
             'logs.user'
         ])->find($id);
@@ -152,6 +154,7 @@ class IncidentController extends Controller
         $incident->update($request->only([
             'subject',
             'category',
+            'subcategory', 
             'priority',
             'status',
             'assigned_to',
@@ -237,30 +240,62 @@ class IncidentController extends Controller
     }
 
     //graph
-    public function weeklyStats(Request $request)
+    public function chartStats(Request $request)
     {
-        $days = (int) $request->query('days', 7);
-        $days = in_array($days, [7, 14, 30, 60]) ? $days : 7;
+        $mode = $request->query('mode', 'days');
 
-        $start = now()->subDays($days - 1)->startOfDay();
-        $end   = now()->endOfDay();
+        if ($mode === 'months') {
+            return $this->monthlyChartData();
+        }
 
-        $rows = Incident::whereBetween('created_at', [$start, $end])
+        return $this->dailyChartData();
+    }
+
+    private function dailyChartData()
+    {
+        // Sunday → Saturday, current week
+        $startOfWeek = now()->startOfWeek(\Carbon\Carbon::SUNDAY);
+        $endOfWeek   = now()->endOfWeek(\Carbon\Carbon::SATURDAY);
+
+        $rows = Incident::whereBetween('created_at', [$startOfWeek, $endOfWeek])
             ->get()
             ->groupBy(fn ($inc) => $inc->created_at->format('Y-m-d'));
 
         $data = [];
-        for ($i = 0; $i < $days; $i++) {
-            $date = $start->copy()->addDays($i);
+        for ($i = 0; $i < 7; $i++) {
+            $date = $startOfWeek->copy()->addDays($i);
             $key  = $date->format('Y-m-d');
 
             $data[] = [
-                'day'   => $days <= 7 ? $date->format('D') : $date->format('j/n'), // "Mon" vs "17/6"
+                'label' => $date->format('D'),   // Sun, Mon, Tue ... Sat
                 'date'  => $key,
                 'count' => $rows->get($key)?->count() ?? 0,
             ];
         }
 
-        return response()->json(['success' => true, 'data' => $data]);
+        return response()->json(['success' => true, 'mode' => 'days', 'data' => $data]);
     }
-}   
+
+    private function monthlyChartData()
+    {
+        // January → December, current year
+        $year = now()->year;
+
+        $rows = Incident::whereYear('created_at', $year)
+            ->get()
+            ->groupBy(fn ($inc) => $inc->created_at->format('Y-m'));
+
+        $data = [];
+        for ($m = 1; $m <= 12; $m++) {
+            $key = sprintf('%04d-%02d', $year, $m);
+
+            $data[] = [
+                'label' => \Carbon\Carbon::create($year, $m, 1)->format('M'), // Jan, Feb ...
+                'date'  => $key,
+                'count' => $rows->get($key)?->count() ?? 0,
+            ];
+        }
+
+        return response()->json(['success' => true, 'mode' => 'months', 'data' => $data]);
+    }
+}    

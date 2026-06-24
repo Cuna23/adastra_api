@@ -12,6 +12,7 @@ class Incident extends Model
         'subject',
         'description',
         'category',
+        'subcategory',
         'priority',
         'attachment',
         'attachment_name',
