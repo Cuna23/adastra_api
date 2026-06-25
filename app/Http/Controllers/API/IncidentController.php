@@ -298,4 +298,28 @@ class IncidentController extends Controller
 
         return response()->json(['success' => true, 'mode' => 'months', 'data' => $data]);
     }
+
+    public function departmentStats(Request $request)
+    {
+        $year  = (int) $request->query('year', now()->year);
+        $month = (int) $request->query('month', now()->month);
+
+        $rows = Incident::with('user.department')
+            ->whereYear('created_at', $year)
+            ->whereMonth('created_at', $month)
+            ->get()
+            ->groupBy(fn($inc) => $inc->user?->department?->department_name ?? 'Unknown');
+
+        $data = $rows->map(fn($group, $dept) => [
+            'label' => $dept,
+            'count' => $group->count(),
+        ])->values();
+
+        return response()->json([
+            'success' => true,
+            'year'    => $year,
+            'month'   => $month,
+            'data'    => $data,
+        ]);
+    }
 }    

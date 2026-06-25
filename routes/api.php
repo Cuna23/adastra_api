@@ -24,5 +24,6 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::put('incidents/{incident}/logs/{log}', [IncidentController::class, 'updateLog']);
     Route::delete('incidents/{incident}/logs/{log}', [IncidentController::class, 'destroyLog']);
     Route::get('incidents/stats/chart', [IncidentController::class, 'chartStats']);  
+    Route::get('/incidents/department-stats', [IncidentController::class, 'departmentStats']);
     Route::apiResource('incidents', IncidentController::class);
 }); 
