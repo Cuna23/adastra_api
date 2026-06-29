@@ -248,12 +248,15 @@ class IncidentController extends Controller
             return $this->monthlyChartData();
         }
 
+        if ($mode === 'weeks') {
+            return $this->weeklyChartData();
+        }
+
         return $this->dailyChartData();
     }
 
     private function dailyChartData()
     {
-        // Sunday → Saturday, current week
         $startOfWeek = now()->startOfWeek(\Carbon\Carbon::SUNDAY);
         $endOfWeek   = now()->endOfWeek(\Carbon\Carbon::SATURDAY);
 
@@ -267,8 +270,10 @@ class IncidentController extends Controller
             $key  = $date->format('Y-m-d');
 
             $data[] = [
-                'label' => $date->format('D'),   // Sun, Mon, Tue ... Sat
+                'label' => $date->format('D'),
                 'date'  => $key,
+                'start' => $key,
+                'end'   => $key,
                 'count' => $rows->get($key)?->count() ?? 0,
             ];
         }
@@ -278,7 +283,6 @@ class IncidentController extends Controller
 
     private function monthlyChartData()
     {
-        // January → December, current year
         $year = now()->year;
 
         $rows = Incident::whereYear('created_at', $year)
@@ -288,15 +292,55 @@ class IncidentController extends Controller
         $data = [];
         for ($m = 1; $m <= 12; $m++) {
             $key = sprintf('%04d-%02d', $year, $m);
+            $monthStart = \Carbon\Carbon::create($year, $m, 1)->startOfMonth();
+            $monthEnd   = \Carbon\Carbon::create($year, $m, 1)->endOfMonth();
 
             $data[] = [
-                'label' => \Carbon\Carbon::create($year, $m, 1)->format('M'), // Jan, Feb ...
+                'label' => $monthStart->format('M'),
                 'date'  => $key,
+                'start' => $monthStart->format('Y-m-d'),
+                'end'   => $monthEnd->format('Y-m-d'),
                 'count' => $rows->get($key)?->count() ?? 0,
             ];
-        } 
+        }
 
         return response()->json(['success' => true, 'mode' => 'months', 'data' => $data]);
+    }
+
+    private function weeklyChartData()
+    {
+        $now = now();
+        $startOfMonth = $now->copy()->startOfMonth();
+        $daysInMonth  = $now->copy()->endOfMonth()->day;
+
+        $rows = Incident::whereYear('created_at', $now->year)
+            ->whereMonth('created_at', $now->month)
+            ->get();
+
+        $data = [];
+        $weekNum = 1;
+
+        for ($day = 1; $day <= $daysInMonth; $day += 7) {
+            $weekStart   = $startOfMonth->copy()->addDays($day - 1)->startOfDay();
+            $weekEndDay  = min($day + 6, $daysInMonth);
+            $weekEnd     = $startOfMonth->copy()->addDays($weekEndDay - 1)->endOfDay();
+
+            $count = $rows->filter(function ($inc) use ($weekStart, $weekEnd) {
+                return $inc->created_at->between($weekStart, $weekEnd);
+            })->count();
+
+            $data[] = [
+                'label' => 'Week ' . $weekNum,
+                'date'  => 'W' . $weekNum,
+                'start' => $weekStart->format('Y-m-d'),
+                'end'   => $weekEnd->format('Y-m-d'),
+                'count' => $count,
+            ];
+
+            $weekNum++;
+        }
+
+        return response()->json(['success' => true, 'mode' => 'weeks', 'data' => $data]);
     }
 
     public function departmentStats(Request $request)
