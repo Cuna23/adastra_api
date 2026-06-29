@@ -294,7 +294,7 @@ class IncidentController extends Controller
                 'date'  => $key,
                 'count' => $rows->get($key)?->count() ?? 0,
             ];
-        }
+        } 
 
         return response()->json(['success' => true, 'mode' => 'months', 'data' => $data]);
     }
