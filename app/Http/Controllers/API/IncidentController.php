@@ -321,8 +321,9 @@ class IncidentController extends Controller
         $weekNum = 1;
 
         for ($day = 1; $day <= $daysInMonth; $day += 7) {
+            $isLastWeek  = $weekNum === 4;
             $weekStart   = $startOfMonth->copy()->addDays($day - 1)->startOfDay();
-            $weekEndDay  = min($day + 6, $daysInMonth);
+            $weekEndDay  = $isLastWeek ? $daysInMonth : min($day + 6, $daysInMonth);
             $weekEnd     = $startOfMonth->copy()->addDays($weekEndDay - 1)->endOfDay();
 
             $count = $rows->filter(function ($inc) use ($weekStart, $weekEnd) {
@@ -338,6 +339,7 @@ class IncidentController extends Controller
             ];
 
             $weekNum++;
+            if ($weekNum > 4) break;
         }
 
         return response()->json(['success' => true, 'mode' => 'weeks', 'data' => $data]);
