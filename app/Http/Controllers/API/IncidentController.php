@@ -69,7 +69,7 @@ class IncidentController extends Controller
             'priority'    => $request->priority,
             'attachment'  => $attachmentPath,
             'attachment_name' => $attachmentName,
-            'status'      => 'In Pending', // default to In Pending for staff review
+            'status'      => 'Open', // default to Open for staff review
             'assigned_to'     => \App\Models\User::where('role', 'super_admin')->value('id')
         ]);
 
