@@ -21,10 +21,10 @@ class AssetSeeder extends Seeder
                 'status'        => 'Pending',
                 'serial_number' => 'DL5440001',
                 'emp_id'        => 'EMP001',
-                'department'    => 'IT',
-                'approved_by'   => 'Ahmad Rahman',
-                'purchased_by'  => 'Procurement Team',
-                'assigned_to'   => 'IT Department',
+                'department'    => 'Information Technology', // [CHANGED] dari 'IT'
+                'approved_by'   => 'Admin',
+                'purchased_by'  => 'Admin',
+                'assigned_to'   => 'Amin',
                 'remark'        => 'New laptop for support team',
             ]
         );
@@ -38,10 +38,10 @@ class AssetSeeder extends Seeder
                 'status'        => 'Resolved',
                 'serial_number' => 'HP450002',
                 'emp_id'        => 'EMP002',
-                'department'    => 'Finance',
-                'approved_by'   => 'Nurul Huda',
-                'purchased_by'  => 'Procurement Team',
-                'assigned_to'   => 'John Doe',
+                'department'    => 'Finance', // [OK] dah match
+                'approved_by'   => 'Super Admin',
+                'purchased_by'  => 'Admin',
+                'assigned_to'   => 'Iwani',
                 'remark'        => 'Assigned to finance executive',
             ]
         );
@@ -55,10 +55,10 @@ class AssetSeeder extends Seeder
                 'status'        => 'Maintenance',
                 'serial_number' => 'LNVE14003',
                 'emp_id'        => 'EMP003',
-                'department'    => 'HR',
-                'approved_by'   => 'Farid Iskandar',
-                'purchased_by'  => 'Procurement Team',
-                'assigned_to'   => 'Siti Aminah',
+                'department'    => 'Human Resource', // [CHANGED] dari 'HR'
+                'approved_by'   => 'Super Admin',
+                'purchased_by'  => 'Super Admin',
+                'assigned_to'   => 'Abu',
                 'remark'        => 'Under hardware maintenance',
             ]
         );
@@ -72,10 +72,10 @@ class AssetSeeder extends Seeder
                 'status'        => 'Disposed',
                 'serial_number' => 'ACP20004',
                 'emp_id'        => 'EMP004',
-                'department'    => 'Administration',
-                'approved_by'   => 'Roslan Karim',
-                'purchased_by'  => 'Procurement Team',
-                'assigned_to'   => 'Administration Department',
+                'department'    => 'Human Resource', // [CHANGED] dari 'Administration'
+                'approved_by'   => 'Admin',
+                'purchased_by'  => 'Ahmad',
+                'assigned_to'   => 'Ainin',
                 'remark'        => 'Disposed due to end-of-life',
             ]
         );
@@ -89,10 +89,10 @@ class AssetSeeder extends Seeder
                 'status'        => 'In Process',
                 'serial_number' => 'SAM54005',
                 'emp_id'        => 'EMP005',
-                'department'    => 'Sales',
-                'approved_by'   => 'Azman Ali',
-                'purchased_by'  => 'Procurement Team',
-                'assigned_to'   => 'Farah Nabila',
+                'department'    => 'Trademark', // [CHANGED] dari 'Sales'
+                'approved_by'   => 'Admin',
+                'purchased_by'  => 'Super Admin',
+                'assigned_to'   => 'Aminah',
                 'remark'        => 'Company mobile device',
             ]
         );
@@ -106,10 +106,10 @@ class AssetSeeder extends Seeder
                 'status'        => 'Maintenance',
                 'serial_number' => 'CSC920006',
                 'emp_id'        => 'EMP006',
-                'department'    => 'IT',
-                'approved_by'   => 'Ahmad Rahman',
-                'purchased_by'  => 'Procurement Team',
-                'assigned_to'   => 'Network Team',
+                'department'    => 'Information Technology', // [CHANGED] dari 'IT'
+                'approved_by'   => 'Super Admin',
+                'purchased_by'  => 'Super Admin',
+                'assigned_to'   => 'Admin',
                 'remark'        => 'Firmware upgrade in progress',
             ]
         );
@@ -123,10 +123,10 @@ class AssetSeeder extends Seeder
                 'status'        => 'Resolved',
                 'serial_number' => 'BRO836007',
                 'emp_id'        => 'EMP007',
-                'department'    => 'Administration',
-                'approved_by'   => 'Nurul Huda',
-                'purchased_by'  => 'Procurement Team',
-                'assigned_to'   => 'Admin Department',
+                'department'    => 'Human Resource', // [CHANGED] dari 'Administration'
+                'approved_by'   => 'Super Admin',
+                'purchased_by'  => 'Super Admin',
+                'assigned_to'   => 'Ahmad',
                 'remark'        => 'Color printer',
             ]
         );
@@ -140,10 +140,10 @@ class AssetSeeder extends Seeder
                 'status'        => 'Pending',
                 'serial_number' => 'DEL242308',
                 'emp_id'        => 'EMP008',
-                'department'    => 'Design',
-                'approved_by'   => 'Roslan Karim',
-                'purchased_by'  => 'Procurement Team',
-                'assigned_to'   => 'Graphic Team',
+                'department'    => 'Trademark', // [CHANGED] dari 'Design'
+                'approved_by'   => 'Admin',
+                'purchased_by'  => 'Admin',
+                'assigned_to'   => 'Siti',
                 'remark'        => '24 inch monitor',
             ]
         );
@@ -157,10 +157,10 @@ class AssetSeeder extends Seeder
                 'status'        => 'In Process',
                 'serial_number' => 'MS365009',
                 'emp_id'        => 'EMP009',
-                'department'    => 'Management',
-                'approved_by'   => 'Farid Iskandar',
-                'purchased_by'  => 'Procurement Team',
-                'assigned_to'   => 'Management Team',
+                'department'    => 'Human Resource', // [CHANGED] dari 'Management'
+                'approved_by'   => 'Admin',
+                'purchased_by'  => 'Abu',
+                'assigned_to'   => 'Aminah',
                 'remark'        => 'Annual subscription',
             ]
         );
@@ -174,10 +174,10 @@ class AssetSeeder extends Seeder
                 'status'        => 'Resolved',
                 'serial_number' => 'LNV700010',
                 'emp_id'        => 'EMP010',
-                'department'    => 'Operations',
-                'approved_by'   => 'Ahmad Rahman',
-                'purchased_by'  => 'Procurement Team',
-                'assigned_to'   => 'Operations Team',
+                'department'    => 'Information Technology', // [CHANGED] dari 'Operations'
+                'approved_by'   => 'Super Admin',
+                'purchased_by'  => 'Super Admin',
+                'assigned_to'   => 'Iwani',
                 'remark'        => 'Desktop workstation',
             ]
         );
