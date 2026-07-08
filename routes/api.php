@@ -16,15 +16,21 @@ Route::post('/login', [AuthController::class, 'login']);
 Route::middleware('auth:sanctum')->group(function () {
     Route::post('/logout', [AuthController::class, 'logout']);
     Route::get('/me', [AuthController::class, 'me']);
-
+    //user management
     Route::apiResource('users', UserController::class);
+        Route::apiResource('departments', DepartmentController::class)->only(['index']);
+    //asset management
     Route::apiResource('asset-categories', AssetCategoryController::class);
     Route::apiResource('assets', AssetController::class);
-    Route::apiResource('departments', DepartmentController::class)->only(['index']);
+    //incident management
     Route::put('incidents/{incident}/
     logs/{log}', [IncidentController::class, 'updateLog']);
     Route::delete('incidents/{incident}/logs/{log}', [IncidentController::class, 'destroyLog']);
     Route::get('incidents/stats/chart', [IncidentController::class, 'chartStats']);  
     Route::get('/incidents/department-stats', [IncidentController::class, 'departmentStats']);
     Route::apiResource('incidents', IncidentController::class);
+    //service request management
+    Route::apiResource('service-requests', ServiceRequestController::class);
+    Route::patch('service-requests/{service_request}/approve', [ServiceRequestController::class, 'approve']);
+    Route::patch('service-requests/{service_request}/reject', [ServiceRequestController::class, 'reject']);
 }); 
