@@ -53,7 +53,7 @@ class UserController extends Controller
             'name' => 'required',
             'email' => 'required|email|unique:users',
             'password' => 'required|min:6',
-            'role' => 'required',
+            'role' => 'required|in:super_admin,admin,hod,staff',
             'department_id' => 'nullable|exists:departments,id',
             'emp_id' => 'nullable|string|max:255|unique:users,emp_id',
             'status' => 'required',

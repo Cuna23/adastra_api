@@ -6,6 +6,7 @@ use App\Http\Controllers\API\AssetCategoryController;
 use App\Http\Controllers\API\AssetController;
 use App\Http\Controllers\API\DepartmentController;
 use App\Http\Controllers\API\IncidentController;
+use App\Http\Controllers\API\ServiceRequestController; 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -23,8 +24,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::apiResource('asset-categories', AssetCategoryController::class);
     Route::apiResource('assets', AssetController::class);
     //incident management
-    Route::put('incidents/{incident}/
-    logs/{log}', [IncidentController::class, 'updateLog']);
+    Route::put('incidents/{incident}/logs/{log}', [IncidentController::class, 'updateLog']);
     Route::delete('incidents/{incident}/logs/{log}', [IncidentController::class, 'destroyLog']);
     Route::get('incidents/stats/chart', [IncidentController::class, 'chartStats']);  
     Route::get('/incidents/department-stats', [IncidentController::class, 'departmentStats']);
