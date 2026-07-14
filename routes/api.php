@@ -33,4 +33,5 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::apiResource('service-requests', ServiceRequestController::class);
     Route::patch('service-requests/{service_request}/approve', [ServiceRequestController::class, 'approve']);
     Route::patch('service-requests/{service_request}/reject', [ServiceRequestController::class, 'reject']);
+    Route::put('service-requests/{service_request}/note', [ServiceRequestController::class, 'addNote']);
 }); 

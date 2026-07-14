@@ -44,6 +44,11 @@ class ServiceRequest extends Model
         return $this->belongsTo(User::class, 'approver_id');
     }
 
+    public function logs()
+    {
+        return $this->hasMany(ServiceRequestLog::class)->orderBy('created_at');
+    }
+
     // Auto-generate SR number on creation
     protected static function boot()
     {
@@ -51,6 +56,14 @@ class ServiceRequest extends Model
 
         static::creating(function ($serviceRequest) {
             $serviceRequest->sr_number = self::generateSrNumber();
+        });
+
+        static::created(function ($serviceRequest) {
+            $serviceRequest->logs()->create([
+                'user_id' => $serviceRequest->requester_id,
+                'action' => 'Created',
+                'description' => 'Service request submitted',
+            ]);
         });
     }
 

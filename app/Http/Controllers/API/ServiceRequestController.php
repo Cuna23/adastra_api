@@ -35,7 +35,7 @@ class ServiceRequestController extends Controller
 
     public function show(int $id)
     {
-        $serviceRequest = ServiceRequest::with(['requester', 'approver'])->findOrFail($id);
+        $serviceRequest = ServiceRequest::with(['requester', 'approver', 'logs.user'])->findOrFail($id);
         return response()->json($serviceRequest);
     }
 
@@ -122,6 +122,12 @@ class ServiceRequestController extends Controller
             'rejection_reason' => null,
         ]);
 
+        $serviceRequest->logs()->create([
+            'user_id' => Auth::id(),
+            'action' => 'Approved',
+            'description' => 'Request approved by ' . Auth::user()->name,
+        ]);
+
         return response()->json($serviceRequest->load(['requester', 'approver']));
     }
 
@@ -155,6 +161,31 @@ class ServiceRequestController extends Controller
             'rejection_reason' => $validated['rejection_reason'],
         ]);
 
+        $serviceRequest->logs()->create([
+            'user_id' => Auth::id(),
+            'action' => 'Rejected',
+            'description' => 'Request rejected: ' . $validated['rejection_reason'],
+        ]);
+
         return response()->json($serviceRequest->load(['requester', 'approver']));
+    }
+
+    public function addNote(Request $request, int $id)
+    {
+        $validated = $request->validate([
+            'note' => 'required|string|max:2000',
+        ]);
+
+        $serviceRequest = ServiceRequest::findOrFail($id);
+
+        $serviceRequest->logs()->create([
+            'user_id' => Auth::id(),
+            'action' => 'Note',
+            'description' => $validated['note'],
+        ]);
+
+        return response()->json(
+            $serviceRequest->load(['requester', 'approver', 'logs.user'])
+        );
     }
 }
