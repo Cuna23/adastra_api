@@ -198,52 +198,36 @@ class ServiceRequestController extends Controller
         );
 
         $validated = $request->validate([
-            'status' => 'required|in:approved,rejected,pending',
+            'status' => 'required|in:approved,rejected',
             'rejection_reason' => 'required_if:status,rejected|nullable|string|max:1000',
         ]);
 
         $serviceRequest = ServiceRequest::findOrFail($id);
 
         abort_if(
-            $serviceRequest->status === 'pending' && $validated['status'] === 'pending',
+            $serviceRequest->status === $validated['status'],
             400,
-            'This request is already pending.'
+            'This request is already ' . $validated['status'] . '.'
         );
 
         $previousStatus = $serviceRequest->status;
-        $previousApprover = $serviceRequest->approver->name ?? 'someone';
 
-        if ($validated['status'] === 'pending') {
-            $serviceRequest->update([
-                'status' => 'pending',
-                'approver_id' => null,
-                'reviewed_at' => null,
-                'rejection_reason' => null,
-            ]);
+        $serviceRequest->update([
+            'status' => $validated['status'],
+            'approver_id' => Auth::id(),
+            'reviewed_at' => now(),
+            'rejection_reason' => $validated['status'] === 'rejected' ? $validated['rejection_reason'] : null,
+        ]);
 
-            $serviceRequest->logs()->create([
-                'user_id' => Auth::id(),
-                'action' => 'Reverted',
-                'description' => Auth::user()->name . " reverted the {$previousStatus} decision (previously by {$previousApprover}). Status reset to pending.",
-            ]);
-        } else {
-            $serviceRequest->update([
-                'status' => $validated['status'],
-                'approver_id' => Auth::id(),
-                'reviewed_at' => now(),
-                'rejection_reason' => $validated['status'] === 'rejected' ? $validated['rejection_reason'] : null,
-            ]);
+        $description = $validated['status'] === 'approved'
+            ? Auth::user()->name . " changed decision to approved"
+            : Auth::user()->name . " changed decision to rejected";
 
-            $description = $validated['status'] === 'approved'
-                ? Auth::user()->name . " changed decision to approved "
-                : Auth::user()->name . " changed decision to rejected";
-
-            $serviceRequest->logs()->create([
-                'user_id' => Auth::id(),
-                'action' => 'Edited',
-                'description' => $description,
-            ]);
-        }
+        $serviceRequest->logs()->create([
+            'user_id' => Auth::id(),
+            'action' => 'Edited',
+            'description' => $description,
+        ]);
 
         return response()->json($serviceRequest->load(['requester', 'approver', 'logs.user']));
     }
