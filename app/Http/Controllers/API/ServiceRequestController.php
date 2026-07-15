@@ -188,4 +188,63 @@ class ServiceRequestController extends Controller
             $serviceRequest->load(['requester', 'approver', 'logs.user'])
         );
     }
+
+    public function editApproval(Request $request, int $id)
+    {
+        abort_unless(
+            Auth::user()->role === 'super_admin',
+            403,
+            'Only Super Admin can edit an approval decision.'
+        );
+
+        $validated = $request->validate([
+            'status' => 'required|in:approved,rejected,pending',
+            'rejection_reason' => 'required_if:status,rejected|nullable|string|max:1000',
+        ]);
+
+        $serviceRequest = ServiceRequest::findOrFail($id);
+
+        abort_if(
+            $serviceRequest->status === 'pending' && $validated['status'] === 'pending',
+            400,
+            'This request is already pending.'
+        );
+
+        $previousStatus = $serviceRequest->status;
+        $previousApprover = $serviceRequest->approver->name ?? 'someone';
+
+        if ($validated['status'] === 'pending') {
+            $serviceRequest->update([
+                'status' => 'pending',
+                'approver_id' => null,
+                'reviewed_at' => null,
+                'rejection_reason' => null,
+            ]);
+
+            $serviceRequest->logs()->create([
+                'user_id' => Auth::id(),
+                'action' => 'Reverted',
+                'description' => Auth::user()->name . " reverted the {$previousStatus} decision (previously by {$previousApprover}). Status reset to pending.",
+            ]);
+        } else {
+            $serviceRequest->update([
+                'status' => $validated['status'],
+                'approver_id' => Auth::id(),
+                'reviewed_at' => now(),
+                'rejection_reason' => $validated['status'] === 'rejected' ? $validated['rejection_reason'] : null,
+            ]);
+
+            $description = $validated['status'] === 'approved'
+                ? Auth::user()->name . " changed decision to approved "
+                : Auth::user()->name . " changed decision to rejected";
+
+            $serviceRequest->logs()->create([
+                'user_id' => Auth::id(),
+                'action' => 'Edited',
+                'description' => $description,
+            ]);
+        }
+
+        return response()->json($serviceRequest->load(['requester', 'approver', 'logs.user']));
+    }
 }
