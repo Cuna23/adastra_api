@@ -54,7 +54,7 @@ class ServiceRequestController extends Controller
 
         $validated['requester_id'] = Auth::id();
         $validated['status'] = 'pending';
-        $validated['approver_id'] = null; // TODO: resolve HOD logic
+        $validated['approver_id'] = null; // TODO: resolve admin logic
 
         if ($request->hasFile('attachment')) {
             $file = $request->file('attachment');
@@ -98,9 +98,9 @@ class ServiceRequestController extends Controller
 
     public function approve(int $id)
     {
-        // Role check — hanya HOD, admin, super_admin boleh approve
+        // Role check — hanya admin, super_admin boleh approve
         abort_unless(
-            in_array(Auth::user()->role, ['hod', 'admin', 'super_admin']),
+            in_array(Auth::user()->role, ['admin', 'super_admin']),
             403,
             'You are not authorized to approve this request.'
         );
@@ -133,9 +133,9 @@ class ServiceRequestController extends Controller
 
     public function reject(Request $request, int $id)
     {
-        // Role check — hanya HOD, admin, super_admin boleh reject
+        // Role check — hanya admin, super_admin boleh reject
         abort_unless(
-            in_array(Auth::user()->role, ['hod', 'admin', 'super_admin']),
+            in_array(Auth::user()->role, ['admin', 'super_admin']),
             403,
             'You are not authorized to reject this request.'
         );
