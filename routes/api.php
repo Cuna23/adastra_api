@@ -9,9 +9,13 @@ use App\Http\Controllers\API\IncidentController;
 use App\Http\Controllers\API\ServiceRequestController; 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\MicrosoftAuthController;
 
 // Public
 Route::post('/login', [AuthController::class, 'login']);
+    // Microsoft OAuth
+Route::get('/auth/microsoft/redirect', [MicrosoftAuthController::class, 'redirect']);
+Route::get('/auth/microsoft/callback', [MicrosoftAuthController::class, 'callback']);
 
 // Protected
 Route::middleware('auth:sanctum')->group(function () {
