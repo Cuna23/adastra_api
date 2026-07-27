@@ -7,6 +7,7 @@ use App\Http\Controllers\API\AssetController;
 use App\Http\Controllers\API\DepartmentController;
 use App\Http\Controllers\API\IncidentController;
 use App\Http\Controllers\API\ServiceRequestController; 
+use App\Http\Controllers\API\CompanyController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\MicrosoftAuthController;
@@ -39,4 +40,10 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::patch('service-requests/{service_request}/reject', [ServiceRequestController::class, 'reject']);
     Route::put('service-requests/{service_request}/note', [ServiceRequestController::class, 'addNote']);
     Route::patch('service-requests/{service_request}/edit-approval', [ServiceRequestController::class, 'editApproval']);
+    //company management
+    Route::get('/org-chart', [CompanyController::class, 'orgChart']);
+    Route::post('/org-chart', [CompanyController::class, 'storeOrgChart']);
+    Route::get('/floor-maps', [CompanyController::class, 'floorMaps']);
+    Route::post('/floor-maps', [CompanyController::class, 'storeFloorMap']);
+    Route::delete('/company/{id}', [CompanyController::class, 'destroy']);
 }); 
