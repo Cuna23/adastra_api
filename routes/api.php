@@ -8,6 +8,7 @@ use App\Http\Controllers\API\DepartmentController;
 use App\Http\Controllers\API\IncidentController;
 use App\Http\Controllers\API\ServiceRequestController; 
 use App\Http\Controllers\API\CompanyController;
+use App\Http\Controllers\API\DashboardController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\MicrosoftAuthController;
@@ -46,4 +47,10 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/floor-maps', [CompanyController::class, 'floorMaps']);
     Route::post('/floor-maps', [CompanyController::class, 'storeFloorMap']);
     Route::delete('/company/{id}', [CompanyController::class, 'destroy']);
-}); 
+    Route::get('/about', [CompanyController::class, 'about']);
+    Route::get('/vision-mission', [CompanyController::class, 'visionMission']);
+    Route::post('/company/content', [CompanyController::class, 'upsertContent']);
+    Route::patch('/company/{id}/title', [CompanyController::class, 'updateTitle']);
+    //dashboard
+    Route::get('/dashboard/stats', [DashboardController::class, 'index']);
+    }); 
