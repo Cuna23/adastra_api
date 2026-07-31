@@ -9,6 +9,8 @@ use App\Http\Controllers\API\IncidentController;
 use App\Http\Controllers\API\ServiceRequestController; 
 use App\Http\Controllers\API\CompanyController;
 use App\Http\Controllers\API\DashboardController;
+use App\Http\Controllers\API\CalendarController;
+use App\Http\Controllers\API\ReminderController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\MicrosoftAuthController;
@@ -53,4 +55,9 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::patch('/company/{id}/title', [CompanyController::class, 'updateTitle']);
     //dashboard
     Route::get('/dashboard/stats', [DashboardController::class, 'index']);
+    //calendar & reminders
+    Route::get('/calendar', [CalendarController::class, 'index']);
+    Route::post('/reminders', [ReminderController::class, 'store']);
+    Route::put('/reminders/{id}', [ReminderController::class, 'update']);
+    Route::delete('/reminders/{id}', [ReminderController::class, 'destroy']);
     }); 
