@@ -18,8 +18,8 @@ use App\Http\Controllers\MicrosoftAuthController;
 // Public
 Route::post('/login', [AuthController::class, 'login']);
     // Microsoft OAuth
-// Route::get('/auth/microsoft/redirect', [MicrosoftAuthController::class, 'redirect']);
-// Route::get('/auth/microsoft/callback', [MicrosoftAuthController::class, 'callback']);
+Route::get('/auth/microsoft/redirect', [MicrosoftAuthController::class, 'redirect']);
+Route::get('/auth/microsoft/callback', [MicrosoftAuthController::class, 'callback']);
 
 // Protected
 Route::middleware('auth:sanctum')->group(function () {
