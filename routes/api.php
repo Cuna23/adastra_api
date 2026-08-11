@@ -11,9 +11,10 @@ use App\Http\Controllers\API\CompanyController;
 use App\Http\Controllers\API\DashboardController;
 use App\Http\Controllers\API\CalendarController;
 use App\Http\Controllers\API\ReminderController;
+use App\Http\Controllers\API\MicrosoftAuthController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\MicrosoftAuthController;
+
 
 // Public
 Route::post('/login', [AuthController::class, 'login']);
