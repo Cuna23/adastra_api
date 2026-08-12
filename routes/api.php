@@ -12,6 +12,7 @@ use App\Http\Controllers\API\DashboardController;
 use App\Http\Controllers\API\CalendarController;
 use App\Http\Controllers\API\ReminderController;
 use App\Http\Controllers\API\MicrosoftAuthController;
+use App\Http\Controllers\API\TeamMemberController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
