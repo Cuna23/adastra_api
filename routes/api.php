@@ -46,8 +46,8 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::put('service-requests/{service_request}/note', [ServiceRequestController::class, 'addNote']);
     Route::patch('service-requests/{service_request}/edit-approval', [ServiceRequestController::class, 'editApproval']);
     //company management
-    Route::get('/org-chart', [CompanyController::class, 'orgChart']);
-    Route::post('/org-chart', [CompanyController::class, 'storeOrgChart']);
+    // Route::get('/org-chart', [CompanyController::class, 'orgChart']);
+    // Route::post('/org-chart', [CompanyController::class, 'storeOrgChart']);
     Route::get('/floor-maps', [CompanyController::class, 'floorMaps']);
     Route::post('/floor-maps', [CompanyController::class, 'storeFloorMap']);
     Route::delete('/company/{id}', [CompanyController::class, 'destroy']);

@@ -25,11 +25,11 @@ class CompanyController extends Controller
     }
 
     // GET /org-chart
-    public function orgChart()
-    {
-        $chart = Company::where('type', 'org_chart')->latest()->first();
-        return response()->json($chart);
-    }
+    // public function orgChart()
+    // {
+    //     $chart = Company::where('type', 'org_chart')->latest()->first();
+    //     return response()->json($chart);
+    // }
 
     // GET /floor-maps
     public function floorMaps()
@@ -53,26 +53,26 @@ class CompanyController extends Controller
     }
 
     // POST /org-chart
-    public function storeOrgChart(Request $request)
-    {
-        $this->authorizeUploader();
+    // public function storeOrgChart(Request $request)
+    // {
+    //     $this->authorizeUploader();
 
-        $request->validate([
-            'image' => 'required|image|max:10240',
-            'title' => 'nullable|string|max:255',
-        ]);
+    //     $request->validate([
+    //         'image' => 'required|image|max:10240',
+    //         'title' => 'nullable|string|max:255',
+    //     ]);
 
-        $path = $request->file('image')->store('org-charts', 'public');
+    //     $path = $request->file('image')->store('org-charts', 'public');
 
-        $chart = Company::create([
-            'type' => 'org_chart',
-            'title' => $request->title ?? 'Company structure',
-            'image_path' => $path,
-            'uploaded_by' => auth()->id(),
-        ]);
+    //     $chart = Company::create([
+    //         'type' => 'org_chart',
+    //         'title' => $request->title ?? 'Company structure',
+    //         'image_path' => $path,
+    //         'uploaded_by' => auth()->id(),
+    //     ]);
 
-        return response()->json(['message' => 'Org chart uploaded successfully', 'data' => $chart], 201);
-    }
+    //     return response()->json(['message' => 'Org chart uploaded successfully', 'data' => $chart], 201);
+    // }
 
     // POST /floor-maps
     public function storeFloorMap(Request $request)
