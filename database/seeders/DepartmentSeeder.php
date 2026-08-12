@@ -15,11 +15,15 @@ class DepartmentSeeder extends Seeder
             'Finance',
             'Trademark',
             'Patent',
+            'Director',
+            'Valuation',
+            'Business Development',
+            'Commercialization',
         ];
 
         foreach ($departments as $name) {
-            Department::UpdateOrCreate(
-                ['department_name' => $name]  // cari by name, kalau takde baru create
+            Department::updateOrCreate(
+                ['department_name' => $name]
             );
         }
     }

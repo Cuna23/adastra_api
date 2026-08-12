@@ -54,6 +54,11 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/vision-mission', [CompanyController::class, 'visionMission']);
     Route::post('/company/content', [CompanyController::class, 'upsertContent']);
     Route::patch('/company/{id}/title', [CompanyController::class, 'updateTitle']);
+    //team member
+    Route::get('/team-members', [TeamMemberController::class, 'index']);
+    Route::post('/team-members', [TeamMemberController::class, 'store']);
+    Route::post('/team-members/{id}', [TeamMemberController::class, 'update']); 
+    Route::delete('/team-members/{id}', [TeamMemberController::class, 'destroy']);
     //dashboard
     Route::get('/dashboard/stats', [DashboardController::class, 'index']);
     //calendar & reminders
