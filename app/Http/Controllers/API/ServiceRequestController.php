@@ -7,10 +7,15 @@ use App\Models\ServiceRequest;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
-use CloudinaryLabs\CloudinaryLaravel\Facades\Cloudinary;
+use Cloudinary\Cloudinary as CloudinarySDK;
 
 class ServiceRequestController extends Controller
-{
+{   
+    private function cloudinary(): CloudinarySDK
+    {
+        return new CloudinarySDK(env('CLOUDINARY_URL'));
+    }
+
     public function index(Request $request)
     {
         $query = ServiceRequest::with(['requester', 'approver']);
@@ -61,11 +66,11 @@ class ServiceRequestController extends Controller
             $file = $request->file('attachment');
             $validated['attachment_name'] = $file->getClientOriginalName();
 
-            $uploaded = Cloudinary::upload($file->getRealPath(), [
-                'folder' => 'service_requests',
-                'resource_type' => 'auto',
-            ]);
-            $validated['attachment'] = $uploaded->getSecurePath();
+            $uploaded = $this->cloudinary()->uploadApi()->upload(
+                $file->getRealPath(),
+                ['folder' => 'service_requests', 'resource_type' => 'auto']
+            );
+            $validated['attachment'] = $uploaded['secure_url'];
         }
 
         $serviceRequest = ServiceRequest::create($validated);
@@ -88,16 +93,16 @@ class ServiceRequestController extends Controller
             'attachment' => 'nullable|file|max:5120',
         ]);
 
-        if ($request->hasFile('attachment')) {
-            $file = $request->file('attachment');
-            $validated['attachment_name'] = $file->getClientOriginalName();
+    if ($request->hasFile('attachment')) {
+        $file = $request->file('attachment');
+        $validated['attachment_name'] = $file->getClientOriginalName();
 
-            $uploaded = Cloudinary::upload($file->getRealPath(), [
-                'folder' => 'service_requests',
-                'resource_type' => 'auto',
-            ]);
-            $validated['attachment'] = $uploaded->getSecurePath();
-        }
+        $uploaded = $this->cloudinary()->uploadApi()->upload(
+            $file->getRealPath(),
+            ['folder' => 'service_requests', 'resource_type' => 'auto']
+        );
+        $validated['attachment'] = $uploaded['secure_url'];
+    }
 
         $serviceRequest->update($validated);
 

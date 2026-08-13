@@ -5,7 +5,7 @@ namespace App\Http\Controllers\API;
 use App\Http\Controllers\Controller;
 use App\Models\Company;
 use Illuminate\Http\Request;
-use CloudinaryLabs\CloudinaryLaravel\Facades\Cloudinary;
+use Cloudinary\Cloudinary as CloudinarySDK;
 
 class CompanyController extends Controller
 {
@@ -23,6 +23,11 @@ class CompanyController extends Controller
         if (auth()->user()->role !== 'super_admin') {
             abort(response()->json(['message' => 'Unauthorized'], 403));
         }
+    }
+
+    private function cloudinary(): CloudinarySDK
+    {
+        return new CloudinarySDK(env('CLOUDINARY_URL'));
     }
 
     // GET /org-chart
@@ -86,14 +91,15 @@ class CompanyController extends Controller
             'sort_order' => 'nullable|integer',
         ]);
 
-        $uploaded = Cloudinary::upload($request->file('image')->getRealPath(), [
-            'folder' => 'floor-maps',
-        ]);
+        $uploaded = $this->cloudinary()->uploadApi()->upload(
+            $request->file('image')->getRealPath(),
+            ['folder' => 'floor-maps']
+        );
 
         $floor = Company::create([
             'type' => 'floor_map',
             'title' => $request->title,
-            'image_path' => $uploaded->getSecurePath(),
+            'image_path' => $uploaded['secure_url'],
             'sort_order' => $request->sort_order ?? 0,
             'uploaded_by' => auth()->id(),
         ]);
