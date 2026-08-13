@@ -16,7 +16,13 @@ use App\Http\Controllers\API\TeamMemberController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
-
+// TEMPORARY DEBUG ROUTE — buang lepas siap debug
+Route::get('/debug-cloudinary', function () {
+    return response()->json([
+        'cloudinary_url_raw' => env('CLOUDINARY_URL'),
+        'cloudinary_config' => config('cloudinary.cloud_url'),
+    ]);
+});
 // Public
 Route::post('/login', [AuthController::class, 'login']);
     // Microsoft OAuth
