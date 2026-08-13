@@ -7,6 +7,7 @@ use App\Models\ServiceRequest;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
+use CloudinaryLabs\CloudinaryLaravel\Facades\Cloudinary;
 
 class ServiceRequestController extends Controller
 {
@@ -54,12 +55,17 @@ class ServiceRequestController extends Controller
 
         $validated['requester_id'] = Auth::id();
         $validated['status'] = 'pending';
-        $validated['approver_id'] = null; // TODO: resolve admin logic
+        $validated['approver_id'] = null;
 
         if ($request->hasFile('attachment')) {
             $file = $request->file('attachment');
             $validated['attachment_name'] = $file->getClientOriginalName();
-            $validated['attachment'] = $file->store('service_requests', 'public');
+
+            $uploaded = Cloudinary::upload($file->getRealPath(), [
+                'folder' => 'service_requests',
+                'resource_type' => 'auto',
+            ]);
+            $validated['attachment'] = $uploaded->getSecurePath();
         }
 
         $serviceRequest = ServiceRequest::create($validated);
@@ -83,19 +89,21 @@ class ServiceRequestController extends Controller
         ]);
 
         if ($request->hasFile('attachment')) {
-            if ($serviceRequest->attachment) {
-                Storage::disk('public')->delete($serviceRequest->attachment);
-            }
             $file = $request->file('attachment');
             $validated['attachment_name'] = $file->getClientOriginalName();
-            $validated['attachment'] = $file->store('service_requests', 'public');
+
+            $uploaded = Cloudinary::upload($file->getRealPath(), [
+                'folder' => 'service_requests',
+                'resource_type' => 'auto',
+            ]);
+            $validated['attachment'] = $uploaded->getSecurePath();
         }
 
         $serviceRequest->update($validated);
 
         return response()->json($serviceRequest);
     }
-
+    
     public function approve(int $id)
     {
         // Role check — hanya admin, super_admin boleh approve

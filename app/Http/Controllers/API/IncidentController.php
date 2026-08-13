@@ -7,6 +7,7 @@ use App\Models\Incident;
 use App\Models\IncidentLog;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use CloudinaryLabs\CloudinaryLaravel\Facades\Cloudinary;
 
 class IncidentController extends Controller
 {
@@ -50,13 +51,12 @@ class IncidentController extends Controller
         if ($request->hasFile('attachment')) {
             $file           = $request->file('attachment');
             $attachmentName = $file->getClientOriginalName();
-            $safeName       = time() . '_' . $attachmentName;
 
-            $attachmentPath = $file->storeAs(
-                'incident_attachments',
-                $safeName,
-                'public'
-            );
+            $uploaded = Cloudinary::upload($file->getRealPath(), [
+                'folder' => 'incident_attachments',
+                'resource_type' => 'auto', // auto-detect image/pdf/etc
+            ]);
+            $attachmentPath = $uploaded->getSecurePath();
         }
 
         $incident = Incident::create([

@@ -5,6 +5,7 @@ namespace App\Http\Controllers\API;
 use App\Http\Controllers\Controller;
 use App\Models\Company;
 use Illuminate\Http\Request;
+use CloudinaryLabs\CloudinaryLaravel\Facades\Cloudinary;
 
 class CompanyController extends Controller
 {
@@ -85,12 +86,14 @@ class CompanyController extends Controller
             'sort_order' => 'nullable|integer',
         ]);
 
-        $path = $request->file('image')->store('floor-maps', 'public');
+        $uploaded = Cloudinary::upload($request->file('image')->getRealPath(), [
+            'folder' => 'floor-maps',
+        ]);
 
         $floor = Company::create([
             'type' => 'floor_map',
             'title' => $request->title,
-            'image_path' => $path,
+            'image_path' => $uploaded->getSecurePath(),
             'sort_order' => $request->sort_order ?? 0,
             'uploaded_by' => auth()->id(),
         ]);

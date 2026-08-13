@@ -5,6 +5,7 @@ namespace App\Http\Controllers\API;
 use App\Http\Controllers\Controller;
 use App\Models\TeamMember;
 use Illuminate\Http\Request;
+use CloudinaryLabs\CloudinaryLaravel\Facades\Cloudinary;
 
 class TeamMemberController extends Controller
 {
@@ -22,7 +23,6 @@ class TeamMemberController extends Controller
         }
     }
 
-    // GET /team-members — semua role boleh view
     public function index()
     {
         $members = TeamMember::with('department')
@@ -33,7 +33,6 @@ class TeamMemberController extends Controller
         return response()->json($members);
     }
 
-    // POST /team-members
     public function store(Request $request)
     {
         $this->authorizeUploader();
@@ -47,9 +46,12 @@ class TeamMemberController extends Controller
             'sort_order' => 'nullable|integer',
         ]);
 
-        $path = null;
+        $photoUrl = null;
         if ($request->hasFile('photo')) {
-            $path = $request->file('photo')->store('team-members', 'public');
+            $uploaded = Cloudinary::upload($request->file('photo')->getRealPath(), [
+                'folder' => 'team-members',
+            ]);
+            $photoUrl = $uploaded->getSecurePath();
         }
 
         $member = TeamMember::create([
@@ -57,7 +59,7 @@ class TeamMemberController extends Controller
             'position' => $request->position,
             'department_id' => $request->department_id,
             'background' => $request->background,
-            'photo_path' => $path,
+            'photo_path' => $photoUrl,
             'sort_order' => $request->sort_order ?? 0,
             'uploaded_by' => auth()->id(),
         ]);
@@ -65,7 +67,6 @@ class TeamMemberController extends Controller
         return response()->json(['message' => 'Team member added successfully', 'data' => $member->load('department')], 201);
     }
 
-    // POST /team-members/{id} (method-spoofed PUT — untuk support multipart file upload)
     public function update(Request $request, string $id)
     {
         $this->authorizeUploader();
@@ -81,9 +82,12 @@ class TeamMemberController extends Controller
             'sort_order' => 'nullable|integer',
         ]);
 
-        $path = $member->photo_path;
+        $photoUrl = $member->photo_path;
         if ($request->hasFile('photo')) {
-            $path = $request->file('photo')->store('team-members', 'public');
+            $uploaded = Cloudinary::upload($request->file('photo')->getRealPath(), [
+                'folder' => 'team-members',
+            ]);
+            $photoUrl = $uploaded->getSecurePath();
         }
 
         $member->update([
@@ -91,14 +95,13 @@ class TeamMemberController extends Controller
             'position' => $request->position,
             'department_id' => $request->department_id,
             'background' => $request->background,
-            'photo_path' => $path,
+            'photo_path' => $photoUrl,
             'sort_order' => $request->sort_order ?? $member->sort_order,
         ]);
 
         return response()->json(['message' => 'Team member updated successfully', 'data' => $member->load('department')]);
     }
 
-    // DELETE /team-members/{id} — super_admin only
     public function destroy(string $id)
     {
         $this->authorizeSuperAdmin();
