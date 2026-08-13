@@ -64,7 +64,7 @@ Route::middleware('auth:sanctum')->group(function () {
     //team member
     Route::get('/team-members', [TeamMemberController::class, 'index']);
     Route::post('/team-members', [TeamMemberController::class, 'store']);
-    Route::post('/team-members/{id}', [TeamMemberController::class, 'update']); 
+    Route::match(['post', 'put'], '/team-members/{id}', [TeamMemberController::class, 'update']);
     Route::delete('/team-members/{id}', [TeamMemberController::class, 'destroy']);
     //dashboard
     Route::get('/dashboard/stats', [DashboardController::class, 'index']);
