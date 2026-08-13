@@ -5,7 +5,7 @@ namespace App\Http\Controllers\API;
 use App\Http\Controllers\Controller;
 use App\Models\TeamMember;
 use Illuminate\Http\Request;
-use CloudinaryLabs\CloudinaryLaravel\Facades\Cloudinary;
+use Cloudinary\Cloudinary as CloudinarySDK;
 
 class TeamMemberController extends Controller
 {
@@ -48,10 +48,11 @@ class TeamMemberController extends Controller
 
         $photoUrl = null;
         if ($request->hasFile('photo')) {
-            $uploaded = Cloudinary::upload($request->file('photo')->getRealPath(), [
+            $cloudinary = new CloudinarySDK(env('CLOUDINARY_URL'));
+            $uploaded = $cloudinary->uploadApi()->upload($request->file('photo')->getRealPath(), [
                 'folder' => 'team-members',
             ]);
-            $photoUrl = $uploaded->getSecurePath();
+            $photoUrl = $uploaded['secure_url'];
         }
 
         $member = TeamMember::create([
@@ -84,10 +85,11 @@ class TeamMemberController extends Controller
 
         $photoUrl = $member->photo_path;
         if ($request->hasFile('photo')) {
-            $uploaded = Cloudinary::upload($request->file('photo')->getRealPath(), [
+            $cloudinary = new CloudinarySDK(env('CLOUDINARY_URL'));
+            $uploaded = $cloudinary->uploadApi()->upload($request->file('photo')->getRealPath(), [
                 'folder' => 'team-members',
             ]);
-            $photoUrl = $uploaded->getSecurePath();
+            $photoUrl = $uploaded['secure_url'];
         }
 
         $member->update([
