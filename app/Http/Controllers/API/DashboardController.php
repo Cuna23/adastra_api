@@ -27,7 +27,7 @@ class DashboardController extends Controller
             ->pluck('count', 'status');
 
         $metrics = [
-            'open_incidents'   => Incident::whereIn('status', ['Open', 'In Progress'])->count(),
+            'open_incidents'   => Incident::whereIn('status', ['Open', 'In Pending'])->count(),
             'pending_requests' => ServiceRequest::where('status', 'pending')->count(),
             'total_assets'     => Asset::count(),
             'active_staff'     => User::count(),
@@ -35,7 +35,7 @@ class DashboardController extends Controller
 
         $needsAttention = collect()
             ->concat(
-                Incident::whereIn('status', ['Open', 'In Progress'])
+                Incident::whereIn('status', ['Open', 'In Pending'])
                     ->orderByRaw("FIELD(priority, 'High','Medium','Low')")
                     ->latest()
                     ->take(5)
@@ -73,7 +73,7 @@ class DashboardController extends Controller
             'metrics' => $metrics,
             'incidents_by_status' => [
                 ['label' => 'Open', 'count' => $incidentsByStatus['Open'] ?? 0],
-                ['label' => 'In progress', 'count' => $incidentsByStatus['In Progress'] ?? 0],
+                ['label' => 'In Pending', 'count' => $incidentsByStatus['In Pending'] ?? 0],
                 ['label' => 'Resolved', 'count' => $incidentsByStatus['Resolved'] ?? 0],
             ],
             'needs_attention' => $needsAttention,
@@ -84,7 +84,7 @@ class DashboardController extends Controller
     {
         $metrics = [
             'my_open_incidents'  => Incident::where('user_id', $user->id)
-                ->whereIn('status', ['Open', 'In Progress'])
+                ->whereIn('status', ['Open', 'In Pending'])
                 ->count(),
             'my_pending_requests' => ServiceRequest::where('requester_id', $user->id)
                 ->where('status', 'pending')
